@@ -49,3 +49,32 @@ isDup (x:xs) = if x `elem` xs then [x] ++ isDup(xs) else isDup(xs)
 defToNames :: Defs -> [Name]
 defToNames [] = []
 defToNames ((VarDef n ty):xs) = [n] ++ defToNames xs
+
+
+-- No definidos
+checkUndefined :: [Name] -> Body -> [Error]
+checkUndefined _ [] = []
+checkUndefined nam ((Read x):xs) = if not(x `elem` nam) then [Undefined x] ++ (checkUndefined nam xs) else checkUndefined nam xs
+checkUndefined nam ((Write exp):xs) = checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam xs
+checkUndefined nam ((While exp body):xs) = checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam body ++ checkUndefined nam xs
+checkUndefined nam ((Assig n exp):xs) = if (n `elem` nam) then checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam xs
+										else [Undefined n] ++ checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam xs
+checkUndefined nam ((If exp body1 body2):xs) = checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam body1 ++ checkUndefined nam body2 ++ checkUndefined nam xs
+
+
+checkUndefinedExp :: [Name] -> [Name] -> [Error]
+checkUndefinedExp _ [] = []
+checkUndefinedExp namE (x:xs) = if (x `elem` namE) then checkUndefinedExp namE xs
+									else [Undefined x] ++ checkUndefinedExp namE xs
+
+defListaNames :: Defs -> [Name]
+defListaNames [] = []
+defListaNames ((VarDef n ty):xs) = [n] ++ defListaNames xs	
+
+expListaNames :: [Expr] -> [Name]
+expListaNames [] = []
+expListaNames ((Var n):xs) = [n] ++ expListaNames xs
+expListaNames ((IntLit _):xs) = [] ++ expListaNames xs
+expListaNames ((BoolLit _):xs) = [] ++ expListaNames xs	
+expListaNames ((Unary _ exp):xs) = expListaNames [exp] ++ expListaNames xs
+expListaNames ((Binary _ exp1 exp2):xs) = expListaNames [exp1] ++ expListaNames [exp2] ++ expListaNames xs
