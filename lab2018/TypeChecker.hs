@@ -28,8 +28,8 @@ instance Show Error where
 debug = flip trace
 
 checkProgram :: Program -> [Error]
-checkProgram (Program name defs body) = if True then
-                                            (checkDupNames defs) --`debug` "Anduvo aca"
+checkProgram (Program name defs body) = if null (checkDupNames defs) then
+                                            (checkUndefined (defListaNames defs) body) --`debug` "Anduvo aca"
                                         else  
                                             (checkDupNames defs) --`debug` "O anduvo aca"
 
@@ -58,7 +58,7 @@ checkUndefined nam ((Read x):xs) = if not(x `elem` nam) then [Undefined x] ++ (c
 checkUndefined nam ((Write exp):xs) = checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam xs
 checkUndefined nam ((While exp body):xs) = checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam body ++ checkUndefined nam xs
 checkUndefined nam ((Assig n exp):xs) = if (n `elem` nam) then checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam xs
-										else [Undefined n] ++ checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam xs
+                                        else [Undefined n] ++ checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam xs
 checkUndefined nam ((If exp body1 body2):xs) = checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam body1 ++ checkUndefined nam body2 ++ checkUndefined nam xs
 
 
