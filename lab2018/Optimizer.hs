@@ -17,7 +17,7 @@ import Debug.Trace
 debug = flip trace
 
 optimize :: Program -> Program
-optimize (Program name defs body) = (Program name defs (reduceIt body))
+optimize (Program name defs body) = (Program name defs (deadCodeElim (reduceIt body)))
 
 reduceIt :: Body -> Body
 reduceIt [] = []
@@ -58,6 +58,7 @@ reduce (Binary Div (IntLit x) (IntLit y)) = IntLit (div x y)
 reduce (Binary Div exp expd) = reduceBasic(Binary Div (reduce exp) (reduce expd)) --cambiar
 reduce (Binary Mod (IntLit x) (IntLit y)) = IntLit (mod x y)
 reduce (Binary Mod exp expd) = reduceBasic(Binary Mod (reduce exp) (reduce expd)) --cambiar
+--faltan casos que no son enteros que son var
 
 reduceBasic :: Expr -> Expr
 reduceBasic (IntLit integer) = IntLit integer
@@ -78,3 +79,12 @@ reduceBasic (Binary Mult (IntLit x) (IntLit y)) = IntLit (x * y)
 reduceBasic (Binary Div (IntLit x) (IntLit y)) = IntLit (div x y)
 reduceBasic (Binary Mod (IntLit x) (IntLit y)) = IntLit (mod x y)
 reduceBasic x = x 
+
+
+deadCodeElim :: Body -> Body
+deadCodeElim [] = []
+deadCodeElim ((While (BoolLit False) body):xs) = deadCodeElim xs
+deadCodeElim ((While exp body):xs) = [While exp (deadCodeElim body)] ++ deadCodeElim xs
+deadCodeElim ((If (BoolLit False) body bodyD):xs) = (deadCodeElim bodyD) ++ deadCodeElim xs
+deadCodeElim ((If (BoolLit True) body bodyD):xs) = (deadCodeElim body) ++ deadCodeElim xs 
+deadCodeElim ((If exp body bodyD):xs) = [If exp (deadCodeElim body) (deadCodeElim bodyD)] ++ deadCodeElim xs 
