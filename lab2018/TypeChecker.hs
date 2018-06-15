@@ -28,53 +28,183 @@ instance Show Error where
 debug = flip trace
 
 checkProgram :: Program -> [Error]
-checkProgram (Program name defs body) = if null (checkDupNames defs) then
-                                            (checkUndefined (defListaNames defs) body) --`debug` "Anduvo aca"
+checkProgram (Program name defs body) = if null (verificarVarDuplidas defs) then
+                                           if null (verificarUndefined body (defListaNames defs)) then
+                                               (verificarTypes defs body) --`debug` "Anduvo aca Type If" 
+                                           else
+                                               (verificarTypes defs body) --`debug` "Anduvo aca Type Else" 
                                         else  
-                                            (checkDupNames defs) --`debug` "O anduvo aca"
-
+                                            (verificarVarDuplidas defs) ++ (verificarUndefined body (defListaNames defs)) ++ (verificarTypes defs body) --`debug` "O anduvo aca"
 
 -- Nombres duplicados
-checkDupNames :: Defs -> [Error]
-checkDupNames def = if null repetidos then 
+verificarVarDuplidas :: Defs -> [Error]
+verificarVarDuplidas def = if null repetidos then 
                         (repetidos) --`debug` "Anduvo aca 1" 
                     else 
                         (repetidos) --`debug` "O anduvo aca 1"
-                    where repetidos = [Duplicated x | x <- reverse(isDup $ reverse(defToNames def))]
+                    where repetidos = [Duplicated x | x <- reverse(duplicados $ reverse(defListaNames def))]
 
-isDup :: [Name] -> [Name] 
-isDup [] = []
-isDup (x:xs) = if x `elem` xs then [x] ++ isDup(xs) else isDup(xs)
-
-defToNames :: Defs -> [Name]
-defToNames [] = []
-defToNames ((VarDef n ty):xs) = [n] ++ defToNames xs
-
+duplicados :: [Name] -> [Name] 
+duplicados [] = []
+duplicados (x:xs) = if x `elem` xs then [x] ++ duplicados(xs) else duplicados(xs)
 
 -- No definidos
-checkUndefined :: [Name] -> Body -> [Error]
-checkUndefined _ [] = []
-checkUndefined nam ((Read x):xs) = if not(x `elem` nam) then [Undefined x] ++ (checkUndefined nam xs) else checkUndefined nam xs
-checkUndefined nam ((Write exp):xs) = checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam xs
-checkUndefined nam ((While exp body):xs) = checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam body ++ checkUndefined nam xs
-checkUndefined nam ((Assig n exp):xs) = if (n `elem` nam) then checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam xs
-                                        else [Undefined n] ++ checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam xs
-checkUndefined nam ((If exp body1 body2):xs) = checkUndefinedExp nam (expListaNames [exp]) ++ checkUndefined nam body1 ++ checkUndefined nam body2 ++ checkUndefined nam xs
+verificarUndefined :: Body -> [Name] -> [Error]
+verificarUndefined [] _ = []
+verificarUndefined ((Read x):xs) nam = if (x `elem` nam) then verificarUndefined xs nam else [Undefined x] ++ (verificarUndefined xs nam) 
+verificarUndefined ((Write exp):xs) nam = verificarUndefinedExp nam (expListaNames [exp]) ++ verificarUndefined xs nam  
+verificarUndefined ((While exp body):xs) nam = verificarUndefinedExp nam (expListaNames [exp]) ++ verificarUndefined body nam ++ verificarUndefined xs nam 
+verificarUndefined ((Assig n exp):xs) nam = if not (n `elem` nam) then [Undefined n] ++ verificarUndefinedExp nam (expListaNames [exp]) ++ verificarUndefined xs nam else verificarUndefinedExp nam (expListaNames [exp]) ++ verificarUndefined xs nam 
+verificarUndefined ((If exp body1 body2):xs) nam = verificarUndefinedExp nam (expListaNames [exp]) ++ verificarUndefined body1 nam ++ verificarUndefined body2 nam ++ verificarUndefined xs nam  
 
-
-checkUndefinedExp :: [Name] -> [Name] -> [Error]
-checkUndefinedExp _ [] = []
-checkUndefinedExp namE (x:xs) = if (x `elem` namE) then checkUndefinedExp namE xs
-									else [Undefined x] ++ checkUndefinedExp namE xs
+verificarUndefinedExp :: [Name] -> [Name] -> [Error]
+verificarUndefinedExp _ [] = []
+verificarUndefinedExp namE (x:xs) = if not (x `elem` namE) then [Undefined x] ++ verificarUndefinedExp namE xs
+                                    else verificarUndefinedExp namE xs
 
 defListaNames :: Defs -> [Name]
 defListaNames [] = []
-defListaNames ((VarDef n ty):xs) = [n] ++ defListaNames xs	
+defListaNames ((VarDef n ty):xs) = [n] ++ defListaNames xs  
 
 expListaNames :: [Expr] -> [Name]
 expListaNames [] = []
 expListaNames ((Var n):xs) = [n] ++ expListaNames xs
 expListaNames ((IntLit _):xs) = [] ++ expListaNames xs
-expListaNames ((BoolLit _):xs) = [] ++ expListaNames xs	
+expListaNames ((BoolLit _):xs) = [] ++ expListaNames xs 
 expListaNames ((Unary _ exp):xs) = expListaNames [exp] ++ expListaNames xs
 expListaNames ((Binary _ exp1 exp2):xs) = expListaNames [exp1] ++ expListaNames [exp2] ++ expListaNames xs
+
+expresionType :: [Expr] -> Defs -> Type
+expresionType ((Var n):xs) def = obtenerType def n 
+expresionType ((Unary op exp):xs) def = if op == Not then TyBool else TyInt 
+expresionType ((Binary op exp1 exp2):xs) def  = if (op == And) || (op == Equ) || (op == Or) || (op == Less) then TyBool else TyInt
+expresionType ((IntLit _):xs) def = TyInt
+expresionType ((BoolLit _):xs) def = TyBool
+
+obtenerType :: Defs -> Name -> Type
+obtenerType [(VarDef nam ty)] _ = ty
+obtenerType ((VarDef nam ty):xs) nom = if nom == nam then ty else obtenerType xs nom
+
+-- Verifico Type
+verificarTypes :: Defs -> Body -> [Error]
+verificarTypes _ [] = []
+verificarTypes def [] = []
+verificarTypes def ((Write exp):xs) = verificarExpresionType [exp] def TyInt ++ verificarTypes def xs
+verificarTypes def ((While exp body):xs) = verificarExpresionType [exp] def TyBool ++ verificarTypes def body ++ verificarTypes def xs
+verificarTypes def ((If exp body1 body2):xs) = verificarExpresionType [exp] def TyBool ++ verificarTypes def body1 ++ verificarTypes def body2 ++ verificarTypes def xs
+verificarTypes def ((Read nam):xs) = if (nam `elem` defListaNames def) then 
+                                        if obtenerType def nam == TyInt then verificarTypes def xs
+                                        else [Expected TyInt (obtenerType def nam)] ++ verificarTypes def xs
+                                      else [Undefined nam] ++ verificarTypes def xs
+verificarTypes def ((Assig nam exp):xs) = if not (nam `elem` defListaNames def) then [Undefined nam] ++ verificarTypes def xs
+                                        else
+                                            if obtenerType def nam == TyInt then verificarExpresionType [exp] def TyInt ++ verificarTypes def xs
+                                            else if obtenerType def nam == TyBool then verificarExpresionType [exp] def TyBool ++ verificarTypes def xs
+                                            else [Undefined nam] ++ verificarTypes def xs   
+
+verificarExpresionType :: [Expr] -> Defs -> Type -> [Error]
+verificarExpresionType [] def  tipo = []
+verificarExpresionType ((Var n):xs) def tipo = if (n `elem` defListaNames def) then if (obtenerType def n) == tipo then verificarExpresionType xs def tipo else [Expected tipo (obtenerType def n)] ++ verificarExpresionType xs def tipo
+                                                else [Undefined n]
+verificarExpresionType ((BoolLit b):xs) def tipo = if tipo == TyBool then verificarExpresionType xs def tipo else [Expected tipo TyBool] ++ verificarExpresionType xs def tipo
+verificarExpresionType ((IntLit int):xs) def tipo = if tipo == TyInt then  verificarExpresionType xs def tipo else [Expected tipo TyInt] ++ verificarExpresionType xs def tipo
+verificarExpresionType ((Unary Not exp):xs) def tipo = if tipo == TyBool then verificarExpresionType [exp] def TyBool ++ verificarExpresionType xs def tipo else [Expected tipo TyBool] ++ verificarExpresionType xs def tipo
+verificarExpresionType ((Unary Neg exp):xs) def tipo = if tipo == TyInt then verificarExpresionType [exp] def TyInt ++ verificarExpresionType xs def tipo else [Expected tipo TyInt] ++ verificarExpresionType xs def tipo
+verificarExpresionType ((Binary op exp1 exp2):xs) def tipo =     
+    let undef = verificarUndefinedExp (defListaNames def) (expListaNames [exp1]) in 
+        let undef1 = verificarUndefinedExp (defListaNames def) (expListaNames [exp2]) in 
+            let expType = verificarExpresionType [exp1] def (expresionType [exp1] def) in 
+                let expType1 = verificarExpresionType [exp2] def (expresionType [exp2] def) in 
+    case op of
+     Equ -> if null undef then 
+                    if null undef1 then
+                        if null expType then
+                            if null expType1 then
+                                if tipo == TyBool then verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo
+                                else [Expected tipo TyBool] ++ verificarExpresionType [exp1,exp2] def TyInt ++ verificarExpresionType xs def tipo
+                            else expType1 ++ verificarExpresionType xs def tipo
+                        else expType ++ expType1 ++ verificarExpresionType xs def tipo
+                    else undef1 ++ expType ++ verificarExpresionType xs def tipo
+                else if null undef1 then  undef ++ expType1 ++ verificarExpresionType xs def tipo
+                     else undef ++ undef1 ++ verificarExpresionType xs def tipo
+     And -> if null (verificarUndefinedExp (defListaNames def) (expListaNames [exp1,exp2])) then
+                if tipo == TyBool then verificarExpresionType [exp1] def TyBool ++ verificarExpresionType [exp2] def TyBool ++ verificarExpresionType xs def tipo
+                else [Expected tipo TyBool] ++ verificarExpresionType [exp1] def TyBool ++ verificarExpresionType [exp2] def TyBool ++ verificarExpresionType xs  def tipo
+            else verificarUndefinedExp (defListaNames def) (expListaNames [exp1,exp2]) ++ verificarExpresionType xs def tipo
+     Or -> if null undef then 
+                    if null undef1 then
+                        if null expType then
+                            if null expType1 then 
+                                if tipo == TyBool then verificarExpresionType [exp1] def TyBool ++ verificarExpresionType [exp2] def TyBool ++ verificarExpresionType xs def tipo
+                                else [Expected tipo TyBool] ++ verificarExpresionType [exp1,exp2] def TyBool ++ verificarExpresionType xs def tipo
+                            else expType1 ++ verificarExpresionType xs def tipo
+                        else expType ++ expType1 ++ verificarExpresionType xs def tipo
+                    else undef1 ++ expType ++ verificarExpresionType xs def tipo
+                else if null undef1 then  undef ++ expType1 ++ verificarExpresionType xs def tipo
+                     else undef ++ undef1 ++ verificarExpresionType xs def tipo
+     Plus -> if null undef then 
+                    if null undef1 then
+                        if null expType then
+                            if null expType1 then
+                                if tipo == TyInt then verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo
+                                else [Expected tipo TyInt] ++ verificarExpresionType [exp1,exp2] def TyInt ++ verificarExpresionType xs def tipo
+                            else expType1 ++ verificarExpresionType xs def tipo
+                        else expType ++ expType1 ++ verificarExpresionType xs def tipo
+                    else undef1 ++ expType ++ verificarExpresionType xs def tipo
+                else if null undef1 then  undef ++ expType1 ++ verificarExpresionType xs def tipo
+                     else undef ++ undef1 ++ verificarExpresionType xs def tipo
+     Minus -> if null undef then 
+                    if null undef1 then
+                        if null expType then
+                            if null expType1 then
+                                if tipo == TyInt then verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo
+                                else [Expected tipo TyInt] ++ verificarExpresionType [exp1,exp2] def TyInt ++ verificarExpresionType xs def tipo
+                            else expType1 ++ verificarExpresionType xs def tipo
+                        else expType ++ expType1 ++ verificarExpresionType xs def tipo
+                    else undef1 ++ expType ++ verificarExpresionType xs def tipo
+                else if null undef1 then undef ++expType1 ++ verificarExpresionType xs def tipo
+                     else undef ++ undef1 ++ verificarExpresionType xs def tipo
+     Mult -> if null undef then 
+                    if null undef1 then
+                        if null expType then
+                            if null expType1 then
+                                if tipo == TyInt then verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo
+                                else [Expected tipo TyInt] ++ verificarExpresionType [exp1,exp2] def TyInt ++ verificarExpresionType xs def tipo
+                            else expType1 ++ verificarExpresionType xs def tipo
+                        else expType ++ expType1 ++ verificarExpresionType xs def tipo
+                    else undef1 ++ expType ++ verificarExpresionType xs def tipo
+            else if null undef1 then undef ++ expType1 ++ verificarExpresionType xs def tipo
+                     else undef ++ undef1 ++ verificarExpresionType xs def tipo
+     Div -> if null undef then 
+                    if null undef1 then
+                        if null expType then
+                            if null expType1 then
+                                if tipo == TyInt then verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo
+                                else [Expected tipo TyInt] ++ verificarExpresionType [exp1,exp2] def TyInt ++ verificarExpresionType xs def tipo
+                            else expType1 ++ verificarExpresionType xs def tipo
+                        else expType ++ expType1 ++ verificarExpresionType xs def tipo
+                    else undef1 ++ expType ++ verificarExpresionType xs def tipo
+                else if null undef1 then undef ++ expType1 ++ verificarExpresionType xs def tipo
+                     else undef ++ undef1 ++ verificarExpresionType xs def tipo 
+     Less -> if null undef then 
+                    if null undef1 then
+                        if null expType then
+                            if null expType1 then
+                                if tipo == TyBool then verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo
+                                else [Expected tipo TyBool] ++ verificarExpresionType [exp1,exp2] def TyInt ++ verificarExpresionType xs def tipo
+                            else expType1 ++ verificarExpresionType xs def tipo
+                        else expType ++ expType1 ++ verificarExpresionType xs def tipo
+                    else undef1 ++ expType ++ verificarExpresionType xs def tipo
+                else if null undef1 then  undef ++ expType1 ++ verificarExpresionType xs def tipo
+                     else undef ++ undef1 ++ verificarExpresionType xs def tipo
+     Mod -> if null undef then 
+                    if null undef1 then
+                        if null expType then
+                            if null expType1 then
+                                if tipo == TyInt then verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo
+                                else [Expected tipo TyInt] ++ verificarExpresionType [exp1,exp2] def TyInt ++ verificarExpresionType xs def tipo
+                            else expType1 ++ verificarExpresionType xs def tipo
+                        else expType ++ expType1 ++ verificarExpresionType xs def tipo
+                    else undef1 ++ expType ++ verificarExpresionType xs def tipo
+                else if null undef1 then undef ++ expType1 ++ verificarExpresionType xs def tipo
+                     else undef ++ undef1 ++ verificarExpresionType xs def tipo
