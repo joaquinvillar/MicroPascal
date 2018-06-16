@@ -26,5 +26,13 @@ type Env = [(Var,Integer)]
 type Stack = [Integer]
 
 -- interprete
-interp :: Code -> Code -> Conf -> IO Conf
-interp = undefined -- Implementar
+interp :: Code -> Code -> Conf -> IO Conf                   --interp listOut listIn (Conf stack env)
+interp _ [] (sta,env) = return (sta,env)
+
+executeCode :: Code -> Code -> Conf -> Conf
+executeCode _ [] (sta,env) = (sta,env)
+executeCode y ((PUSH x):xs) (sta,env) = executeCode ([PUSH x] ++ y) xs (([x] ++ sta),env)
+executeCode y ((ADD):xs) (sta,env) = executeCode ([ADD] ++ y) xs ((addTwo sta),env)
+
+addTwo :: Stack -> Stack
+addTwo inSt = [(sum (take 2 inSt))] ++ (tail (tail inSt))
