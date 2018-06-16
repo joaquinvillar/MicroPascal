@@ -15,4 +15,4 @@ import MachineLang
 -- en caso de ser necesario
 
 generate :: Program -> Code
-generate = undefined -- Implementar
+generate (Program name defs body) = [ADD]
