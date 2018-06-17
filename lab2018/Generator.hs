@@ -22,7 +22,7 @@ generadorCode :: Body -> Code
 generadorCode [] = [] `debug` "generateCode []"
 generadorCode ((Write exp):xs) =  generadorCode xs ++ generadorExpr exp ++ [WRITE] 
 generadorCode ((While exp body):xs) = generadorExpr exp  ++ generadorCode body ++ generadorCode xs 
-generadorCode ((If exp body1 body2):xs) = generadorExpr exp `debug` "generateCode IF"++ createJumpZ body1 `debug` "generateCode body1" ++ createJump body2 `debug` "generateCode body2" ++ generadorCode xs `debug` "generateCode IF xs"  
+generadorCode ((If exp body1 body2):xs) = generadorExpr exp ++ createJumpZ body1 ++ createJump body2 ++ [SKIP] ++ generadorCode xs
 generadorCode ((Read name):xs) = [READ] ++ [STORE name] `debug` "generateCode Read" ++ generadorCode xs `debug` "generateCode Read xs"
 generadorCode ((Assig name exp):xs) = generadorExpr exp `debug` "generateCode Assig" ++ [STORE name] ++ generadorCode xs `debug` "generateCode Assig xs" 
 
@@ -36,20 +36,20 @@ generadorExpr (Binary Mod exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 
 generadorExpr (Binary Minus exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [SUB]
 generadorExpr (Binary Mult exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [MUL]
 generadorExpr (Binary Div exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [DIV]
-generadorExpr (Binary Equ exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [CMP]
-generadorExpr (Binary Or exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [CMP]
-generadorExpr (Binary And exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [CMP]
-generadorExpr (Binary Less exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [CMP]
+generadorExpr (Binary Equ exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [CMP] ++ [JMPZ 3] ++ [PUSH 0] ++ [JUMP 2] ++ [PUSH 1] ++ [SKIP]
+generadorExpr (Binary Or exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [JMPZ 3] ++ [JMPZ 1] ++ [PUSH 1] ++[SKIP]
+generadorExpr (Binary And exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [JMPZ 3] ++ [JMPZ 1] ++ [PUSH 1] ++ [SKIP]
+generadorExpr (Binary Less exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [CMP] ++ [PUSH 1] ++ [ADD] ++ [JMPZ 3] ++ [PUSH 0] ++ [JUMP 2] ++ [PUSH 1] ++ [SKIP]
 
 createJumpZ :: Body -> Code
 createJumpZ body = do
                let gen = generadorCode body
-               (geneCodeZ gen (length gen))
+               (geneCodeZ gen ((length gen) + 2)) ++ gen
 
 createJump :: Body -> Code
 createJump body = do
                 let gen = generadorCode body
-                (geneCode gen (length gen))
+                (geneCode gen ((length gen) + 1)) ++ gen
 
 geneCodeZ :: [Instr] -> Int -> Code
 geneCodeZ gen l = do
