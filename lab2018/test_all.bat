@@ -122,3 +122,5 @@ FC test/salida/test15.opt test/misalida/test15mio.opt
 echo creando test15mio.cod
 MicroPascal.exe -m test/test15 < test15.in > test/misalida/test15mio.cod
 FC test/salida/test15.cod test/misalida/test15mio.cod
+
+pause
