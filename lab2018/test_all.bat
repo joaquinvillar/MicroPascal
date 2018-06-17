@@ -8,11 +8,11 @@ MicroPascal.exe -m test/test01 > test/misalida/test01mio.cod
 FC %~dp0test\salida\test01.cod %~dp0test\misalida\test01mio.cod
 
 echo creando test02mio.opt
-MicroPascal.exe -o test/test02 < test02.in > test/misalida/test02mio.opt
+MicroPascal.exe -o test/test02 < test/test02.in > test/misalida/test02mio.opt
 FC %~dp0test\salida\test02.opt %~dp0test\misalida\test02mio.opt
 
 echo creando test02mio.cod
-MicroPascal.exe -m test/test02 < test02.in > test/misalida/test02mio.cod
+MicroPascal.exe -m test/test02 < test/test02.in > test/misalida/test02mio.cod
 FC %~dp0test\salida\test02.cod %~dp0test\misalida\test02mio.cod
 
 echo creando test03mio.opt
@@ -33,27 +33,27 @@ MicroPascal.exe -m test/test04 > test/misalida/test04mio.cod
 FC %~dp0test\salida\test04.cod %~dp0test\misalida\test04mio.cod
 
 echo creando test05mio.opt
-MicroPascal.exe -o test/test05 < test05.in > test/misalida/test05mio.opt
+MicroPascal.exe -o test/test05 < test/test05.in > test/misalida/test05mio.opt
 FC %~dp0test\salida\test05.opt %~dp0test\misalida\test05mio.opt
 
 echo creando test05mio.cod
-MicroPascal.exe -m test/test05 < test05.in > test/misalida/test05mio.cod
+MicroPascal.exe -m test/test05 < test/test05.in > test/misalida/test05mio.cod
 FC %~dp0test\salida\test05.cod %~dp0test\misalida\test05mio.cod
 
 echo creando test06mio.opt
-MicroPascal.exe -o test/test06 < test06.in > test/misalida/test06mio.opt
+MicroPascal.exe -o test/test06 < test/test06.in > test/misalida/test06mio.opt
 FC %~dp0test\salida\test06.opt %~dp0test\misalida\test06mio.opt
 
 echo creando test06mio.cod
-MicroPascal.exe -m test/test06 < test06.in > test/misalida/test06mio.cod
+MicroPascal.exe -m test/test06 < test/test06.in > test/misalida/test06mio.cod
 FC %~dp0test\salida\test06.cod %~dp0test\misalida\test06mio.cod
 
 echo creando test07mio.opt
-MicroPascal.exe -o test/test07 < test07.in > test/misalida/test07mio.opt
+MicroPascal.exe -o test/test07 < test/test07.in > test/misalida/test07mio.opt
 FC %~dp0test\salida\test07.opt %~dp0test\misalida\test07mio.opt
 
 echo creando test07mio.cod
-MicroPascal.exe -m test/test07 < test07.in > test/misalida/test07mio.cod
+MicroPascal.exe -m test/test07 < test/test07.in > test/misalida/test07mio.cod
 FC %~dp0test\salida\test07.cod %~dp0test\misalida\test07mio.cod
 
 echo creando test08mio.opt
@@ -108,19 +108,19 @@ MicroPascal.exe -m test/test13 > test/misalida/test13mio.cod
 FC %~dp0test\salida\test13.cod %~dp0test\misalida\test13mio.cod
 
 echo creando test14mio.opt
-MicroPascal.exe -o test/test14 < test14.in > test/misalida/test14mio.opt
+MicroPascal.exe -o test/test14 < test/test14.in > test/misalida/test14mio.opt
 FC %~dp0test\salida\test14.opt %~dp0test\misalida\test14mio.opt
 
 echo creando test14mio.cod
-MicroPascal.exe -m test/test14 < test14.in > test/misalida/test14mio.cod
+MicroPascal.exe -m test/test14 < test/test14.in > test/misalida/test14mio.cod
 FC %~dp0test\salida\test14.cod %~dp0test\misalida\test14mio.cod
 
 echo creando test15mio.opt
-MicroPascal.exe -o test/test15 < test15.in > test/misalida/test15mio.opt
+MicroPascal.exe -o test/test15 < test/test15.in > test/misalida/test15mio.opt
 FC %~dp0test\salida\test15.opt %~dp0test\misalida\test15mio.opt
 
 echo creando test15mio.cod
-MicroPascal.exe -m test/test15 < test15.in > test/misalida/test15mio.cod
+MicroPascal.exe -m test/test15 < test/test15.in > test/misalida/test15mio.cod
 FC %~dp0test\salida\test15.cod %~dp0test\misalida\test15mio.cod
 
 pause
