@@ -9,10 +9,34 @@
 module Generator where
 
 
-import Syntax
-import MachineLang
--- se pueden agregar mas importaciones
--- en caso de ser necesario
-
-generate :: Program -> Code
-generate (Program name defs body) = [ADD]
+    import Syntax
+    import MachineLang
+    import Optimizer
+    -- se pueden agregar mas importaciones
+    -- en caso de ser necesario
+    
+    generate :: Program -> Code
+    generate (Program name defs body) = (generadorCode defs body) --`debug` "generate" 
+    
+    generadorCode :: Defs -> Body -> Code
+    generadorCode def [] = [] --`debug` "generateCode []"
+    generadorCode def ((Write exp):xs) = [WRITE] ++ generadorExpr def exp ++ generadorCode def xs 
+    generadorCode def ((While exp body):xs) = generadorExpr def exp ++ generadorCode def body ++ generadorCode def xs
+    generadorCode def ((If exp body1 body2):xs) = generadorExpr def exp ++ generadorCode def body1 ++ generadorCode def body2 ++ generadorCode def xs   
+    generadorCode def ((Read nam):xs) = [READ] ++ generadorCode def xs
+    generadorCode def ((Assig name exp):xs) = generadorExpr def exp ++ generadorCode def xs 
+    
+    generadorExpr :: Defs -> Expr -> Code
+    generadorExpr def (Var n) = [STORE n] 
+    generadorExpr def (BoolLit b) = if b == True then [PUSH 1] else [PUSH 0] 
+    generadorExpr def (IntLit b) = [PUSH b] 
+    generadorExpr def (Unary Not exp) = [NEG] 
+    --generadorExpr def ((Binary op exp1 exp2):xs) = case op of Equ -> [CMP]
+    --														Plus -> [ADD]
+    --														Mult -> [MUL]
+    --														Div -> [DIV]
+    --														Mod -> [MOD]
+        
+    
+    aux :: String -> Code
+    aux a = undefined
