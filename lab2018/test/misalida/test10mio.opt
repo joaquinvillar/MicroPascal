@@ -1,3 +1,5 @@
 Undefined: z
+Expected: integer Actual: boolean
+Expected: integer Actual: boolean
 Undefined: w
 Undefined: r
