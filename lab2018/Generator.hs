@@ -20,11 +20,11 @@ generate (Program name defs body) = (generadorCode body) --`debug` "generate"
 
 generadorCode :: Body -> Code
 generadorCode [] = [] `debug` "generateCode []"
-generadorCode ((Write exp):xs) =  generadorCode xs ++ generadorExpr exp ++ [WRITE] 
+generadorCode ((Write exp):xs) = generadorExpr exp ++ [WRITE] ++ generadorCode xs
 generadorCode ((While exp body):xs) = generadorExpr exp  ++ generadorCode body ++ generadorCode xs 
 generadorCode ((If exp body1 body2):xs) = generadorExpr exp ++ createJumpZ body1 ++ createJump body2 ++ [SKIP] ++ generadorCode xs
-generadorCode ((Read name):xs) = [READ] ++ [STORE name] `debug` "generateCode Read" ++ generadorCode xs `debug` "generateCode Read xs"
-generadorCode ((Assig name exp):xs) = generadorExpr exp `debug` "generateCode Assig" ++ [STORE name] ++ generadorCode xs `debug` "generateCode Assig xs" 
+generadorCode ((Read name):xs) = [READ] ++ [STORE name] ++ generadorCode xs
+generadorCode ((Assig name exp):xs) = generadorExpr exp ++ [STORE name] ++ generadorCode xs
 
 generadorExpr :: Expr -> Code
 generadorExpr (Var n) = [LOAD n] `debug` "generadorExpr Var"

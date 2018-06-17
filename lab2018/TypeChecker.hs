@@ -32,9 +32,9 @@ checkProgram (Program name defs body) = if null (verificarVarDuplidas defs) then
                                            if null (verificarUndefined body (defListaNames defs)) then
                                                (verificarTypes defs body) --`debug` "Anduvo aca Type If" 
                                            else
-                                               (verificarTypes defs body) --`debug` "Anduvo aca Type Else" 
+                                               (verificarUndefined body (defListaNames defs)) --`debug` "Anduvo aca Type Else" 
                                         else  
-                                            (verificarVarDuplidas defs) ++ (verificarUndefined body (defListaNames defs)) --`debug` "O anduvo aca"
+                                            (verificarVarDuplidas defs) -- ++ (verificarUndefined body (defListaNames defs)) 
 
 -- Nombres duplicados
 verificarVarDuplidas :: Defs -> [Error]
@@ -88,7 +88,6 @@ obtenerType ((VarDef nam ty):xs) nom = if nom == nam then ty else obtenerType xs
 -- Verifico Type
 verificarTypes :: Defs -> Body -> [Error]
 verificarTypes _ [] = []
-verificarTypes def [] = []
 verificarTypes def ((Write exp):xs) = verificarExpresionType [exp] def TyInt ++ verificarTypes def xs
 verificarTypes def ((While exp body):xs) = verificarExpresionType [exp] def TyBool ++ verificarTypes def body ++ verificarTypes def xs
 verificarTypes def ((If exp body1 body2):xs) = verificarExpresionType [exp] def TyBool ++ verificarTypes def body1 ++ verificarTypes def body2 ++ verificarTypes def xs

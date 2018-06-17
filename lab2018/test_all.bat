@@ -78,7 +78,7 @@ FC %~dp0test\salida\test10.opt %~dp0test\misalida\test10mio.opt
 
 echo creando test10mio.cod
 MicroPascal.exe -m test/test10 > test/misalida/test10mio.cod
-FC %~dp0test/test10.cod %~dp0test\misalida\test10mio.cod
+FC %~dp0test\salida\test10.cod %~dp0test\misalida\test10mio.cod
 
 
 echo creando test11mio.opt
