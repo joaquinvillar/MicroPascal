@@ -13,6 +13,7 @@
 
 module Interpreter where
 
+import Syntax
 import MachineLang
 -- se pueden agregar mas importaciones
 -- en caso de ser necesario
@@ -101,6 +102,5 @@ storeEnv var int ((varX,intX):xs) = if var == varX then
                                         [(varX,int)] ++ xs
                                     else [(varX,intX)] ++ (storeEnv var int xs)                             
 
-aux :: String -> Program
+aux :: String -> IO Conf
 aux a = undefined        
-                            

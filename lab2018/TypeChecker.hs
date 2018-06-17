@@ -78,3 +78,6 @@ expListaNames ((IntLit _):xs) = [] ++ expListaNames xs
 expListaNames ((BoolLit _):xs) = [] ++ expListaNames xs	
 expListaNames ((Unary _ exp):xs) = expListaNames [exp] ++ expListaNames xs
 expListaNames ((Binary _ exp1 exp2):xs) = expListaNames [exp1] ++ expListaNames [exp2] ++ expListaNames xs
+
+aux :: String -> [Error]
+aux a = undefined  
