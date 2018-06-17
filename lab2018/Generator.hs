@@ -44,14 +44,21 @@ generadorExpr (Binary Less exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1
 createJumpZ :: Body -> Code
 createJumpZ body = do
                let gen = generadorCode body
-               let len = length gen
-               [JUMPZ len] ++ gen
+               (geneCodeZ gen (length gen))
 
 createJump :: Body -> Code
 createJump body = do
                 let gen = generadorCode body
-                let len = length gen
-                [JUMP len] ++ gen
+                (geneCode gen (length gen))
+
+geneCodeZ :: [Instr] -> Int -> Code
+geneCodeZ gen l = do
+                [JMPZ l]    
+
+
+geneCode :: [Instr] -> Int -> Code
+geneCode gen l = do
+                [JUMP l]              
 
 aux :: String -> Code
 aux a = undefined
