@@ -20,12 +20,12 @@ optimize :: Program -> Program
 optimize (Program name defs body) = (Program name defs (deadCodeElim (reduceIt body))) --(Program name defs (deadCodeElim (reduceIt body)))
 
 reduceIt :: Body -> Body
-reduceIt [] = [] `debug` "reduceIt []" 
+reduceIt [] = [] 
 reduceIt ((Assig name expr):xs) = [Assig name (reduce expr)] ++ reduceIt xs
-reduceIt ((If expr body bodyD):xs) = [If (reduce expr) (reduceIt body) (reduceIt bodyD)] `debug` "reduceIt IF"  ++ reduceIt xs `debug` "reduceIt IF xs" 
-reduceIt ((While expr body):xs) = [While (reduce expr) (reduceIt body)] `debug` "reduceIt While"  ++ reduceIt xs `debug` "reduceIt While xs" 
-reduceIt ((Write expr):xs) = [Write (reduce expr)] `debug` "reduceIt Write"  ++ reduceIt xs `debug` "reduceIt Write xs" 
-reduceIt ((Read name):xs) = [Read name] `debug` "Read name"  ++ reduceIt xs `debug` "Read xs" 
+reduceIt ((If expr body bodyD):xs) = [If (reduce expr) (reduceIt body) (reduceIt bodyD)]  ++ reduceIt xs 
+reduceIt ((While expr body):xs) = [While (reduce expr) (reduceIt body)] ++ reduceIt xs 
+reduceIt ((Write expr):xs) = [Write (reduce expr)]  ++ reduceIt xs 
+reduceIt ((Read name):xs) = [Read name]   ++ reduceIt xs 
 
 
 reduce :: Expr -> Expr

@@ -39,7 +39,7 @@ generadorExpr (Binary Mult exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1
 generadorExpr (Binary Div exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [DIV]
 generadorExpr (Binary Equ exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [CMP] ++ [JMPZ 3] ++ [PUSH 0] ++ [JUMP 2] ++ [PUSH 1] ++ [SKIP]
 generadorExpr (Binary Or exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [JMPZ 3] ++ [JMPZ 1] ++ [PUSH 1] ++[SKIP]
-generadorExpr (Binary And exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [JMPZ 3] ++ [JMPZ 1] ++ [PUSH 1] ++ [SKIP]
+generadorExpr (Binary And exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [JMPZ 2] ++ [JUMP 3] ++ [JMPZ 1] ++ [PUSH 0] ++ [SKIP]
 generadorExpr (Binary Less exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [CMP] ++ [PUSH 1] ++ [ADD] ++ [JMPZ 3] ++ [PUSH 0] ++ [JUMP 2] ++ [PUSH 1] ++ [SKIP]
 
 createJumpZ :: Body -> Code
