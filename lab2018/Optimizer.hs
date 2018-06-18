@@ -46,7 +46,8 @@ reduce (Binary And (BoolLit True) expr) = reduceBasic(Binary And (BoolLit True) 
 reduce (Binary And exprU exprD) = reduceBasic(Binary And (reduce exprU) (reduce exprD))
 reduce (Unary Not (BoolLit True)) = BoolLit False
 reduce (Unary Not (BoolLit False)) = BoolLit True
-reduce (Unary Not expr) =  reduceBasic(Unary Not (reduce expr)) 
+reduce (Unary Not expr) = reduceBasic(Unary Not (reduce expr)) 
+reduce (Unary Neg expr) = reduceBasic(Unary Neg (reduce expr)) 
 reduce (Binary Equ (IntLit x) (IntLit y)) = if x == y then BoolLit True else BoolLit False
 reduce (Binary Equ exp expd) = reduceBasic(Binary Equ (reduce exp) (reduce expd)) 
 reduce (Binary Less (IntLit x) (IntLit y)) = if x < y then BoolLit True else BoolLit False

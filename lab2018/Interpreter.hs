@@ -31,34 +31,34 @@ debug = flip trace
 
 -- interprete
 interp :: Code -> Code -> Conf -> IO Conf                   --interp listOut listIn (Conf stack env)
-interp y [] x = return x `debug` "exit" 
+interp y [] x = return x
 interp y ((WRITE):xs) (sta,env) = do
-                                    print (head sta) `debug` "return"
+                                    print (head sta)
                                     interp ([WRITE] ++ y) xs ((deleteList sta),env)    
 interp y ((READ):xs) (sta,env) = do   
-                                    val <- getLine `debug` "read" 
+                                    val <- getLine
                                     let valInt = (read val :: Integer)
                                     interp ([READ] ++ y) xs (([valInt] ++ sta),env)                                                               
-interp y ((PUSH x):xs) (sta,env) = interp ([PUSH x] ++ y) xs (([x] ++ sta),env) `debug` "push" 
-interp y ((ADD):xs) (sta,env) = interp ([ADD] ++ y) xs ((addTwo sta),env) `debug` "add" 
+interp y ((PUSH x):xs) (sta,env) = interp ([PUSH x] ++ y) xs (([x] ++ sta),env)
+interp y ((ADD):xs) (sta,env) = interp ([ADD] ++ y) xs ((addTwo sta),env) 
 interp y ((NEG):xs) (sta,env) = interp ([NEG] ++ y) xs ((negTop sta),env)
 interp y ((SUB):xs) (sta,env) = interp ([SUB] ++ y) xs ((subTwo sta),env)
 interp y ((MUL):xs) (sta,env) = interp ([MUL] ++ y) xs ((mulTwo sta),env)
 interp y ((MOD):xs) (sta,env) = interp ([MOD] ++ y) xs ((modTwo sta),env)
-interp y ((CMP):xs) (sta,env) = interp ([CMP] ++ y) xs ((cmpTwo sta),env) `debug` "cmp" 
+interp y ((CMP):xs) (sta,env) = interp ([CMP] ++ y) xs ((cmpTwo sta),env)
 interp y ((JUMP x):xs) (sta,env) = if x < 0 then 
-                                            interp (removeCmd (-x) y) (moveCmd (-x) y ([JUMP x] ++ xs)) ((sta),env)
+                                            interp (removeCmd (-x) y) (moveCmd (-x) y ([JUMP x] ++ xs)) ((sta),env) 
                                         else 
                                             interp (moveCmd (x) ([JUMP x] ++ xs) y) (removeCmd (x) ([JUMP x] ++ xs)) ((sta),env)
 interp y ((JMPZ x):xs) (sta,env) = if (head sta) == 0 then 
                                             if x < 0 then 
                                                 interp (removeCmd (-x) y) (moveCmd (-x) y ([JMPZ x] ++ xs)) ((deleteList sta),env)
                                             else 
-                                                interp (moveCmd (x) ([JUMP x] ++ xs) y) (removeCmd (x) ([JMPZ x] ++ xs)) ((deleteList sta),env)
+                                                interp (moveCmd (x) ([JMPZ x] ++ xs) y) (removeCmd (x) ([JMPZ x] ++ xs)) ((deleteList sta),env)
                                         else 
                                             interp ([JMPZ x] ++ y) xs ((deleteList sta),env)
-interp y ((LOAD x):xs) (sta,env) = interp ([LOAD x] ++ y) xs (([(loadEnv x env)] ++ sta),env) `debug` "load" 
-interp y ((STORE x):xs) (sta,env) = interp ([STORE x] ++ y) xs ((deleteList sta),(storeEnv x (head sta) env))      `debug` "store"                                       
+interp y ((LOAD x):xs) (sta,env) = interp ([LOAD x] ++ y) xs (([(loadEnv x env)] ++ sta),env)
+interp y ((STORE x):xs) (sta,env) = interp ([STORE x] ++ y) xs ((deleteList sta),(storeEnv x (head sta) env))            
 interp y ((SKIP):xs) (sta,env) = interp ([SKIP] ++ y) xs (sta,env)
 
 addTwo :: Stack -> Stack
@@ -78,10 +78,10 @@ modTwo inSt = [mod (head inSt) (last (take 2 inSt))] ++ (deleteList (deleteList 
 
 cmpTwo :: Stack -> Stack
 cmpTwo inSt = do              
-            if (head inSt) > (last (take 2 inSt)) `debug` "cmptwo" 
-            then [1]  `debug` "then" ++ (deleteList (deleteList inSt)) `debug` "cmptwothen" 
-            else if (head inSt) < (last (take 2 inSt)) `debug` "cmptwoelse" 
-            then [-1] ++ (deleteList (deleteList inSt))  `debug` "cmptwoelse -1" 
+            if (head inSt) > (last (take 2 inSt)) 
+            then [1] ++ (deleteList (deleteList inSt))
+            else if (head inSt) < (last (take 2 inSt))
+            then [-1] ++ (deleteList (deleteList inSt))
             else [0] ++ (deleteList (deleteList inSt)) 
 
 moveCmd :: Shift -> Code -> Code -> Code
@@ -110,10 +110,10 @@ aux a = undefined
 
 deleteList :: Stack -> Stack
 --deleteList [] = [] `debug` "delete list 1" 
-deleteList ((x):[]) = [] `debug` "delete list 2" 
-deleteList ((x):xs) = xs `debug` "delete list 3" 
+deleteList ((x):[]) = []
+deleteList ((x):xs) = xs
 
 deleteListShi :: Code -> Code
 --deleteListShi [] = [] `debug` "delete list 1" 
-deleteListShi ((x):[]) = [] `debug` "delete list 2" 
-deleteListShi ((x):xs) = xs `debug` "delete list 3"
+deleteListShi ((x):[]) = []
+deleteListShi ((x):xs) = xs

@@ -19,18 +19,19 @@ generate :: Program -> Code
 generate (Program name defs body) = (generadorCode body) --`debug` "generate" 
 
 generadorCode :: Body -> Code
-generadorCode [] = [] `debug` "generateCode []"
+generadorCode [] = []
 generadorCode ((Write exp):xs) = generadorExpr exp ++ [WRITE] ++ generadorCode xs
-generadorCode ((While exp body):xs) = generadorExpr exp  ++ generadorCode body ++ generadorCode xs 
+generadorCode ((While exp body):xs) = jumpWhile exp body ++ [SKIP] ++ generadorCode xs 
 generadorCode ((If exp body1 body2):xs) = generadorExpr exp ++ createJumpZ body1 ++ createJump body2 ++ [SKIP] ++ generadorCode xs
 generadorCode ((Read name):xs) = [READ] ++ [STORE name] ++ generadorCode xs
 generadorCode ((Assig name exp):xs) = generadorExpr exp ++ [STORE name] ++ generadorCode xs
 
 generadorExpr :: Expr -> Code
-generadorExpr (Var n) = [LOAD n] `debug` "generadorExpr Var"
-generadorExpr (BoolLit b) = if b == True then [PUSH 1] `debug` "generadorExpr BoolLit 1" else [PUSH 0] `debug` "generadorExpr BoolLit 2" 
-generadorExpr (IntLit b) = [PUSH b] `debug` "generadorExpr IntLit"
-generadorExpr (Unary Not exp) = generadorExpr exp ++ [NEG] `debug` "generadorExpr Unary" 
+generadorExpr (Var n) = [LOAD n]
+generadorExpr (BoolLit b) = if b == True then [PUSH 1] else [PUSH 0] 
+generadorExpr (IntLit b) = [PUSH b]
+generadorExpr (Unary Not exp) = generadorExpr exp ++ [JMPZ 3] ++ [PUSH 0] ++ [JUMP 2] ++ [PUSH 1] ++ [SKIP]
+generadorExpr (Unary Neg exp) = generadorExpr exp ++ [NEG]
 generadorExpr (Binary Plus exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [ADD] 
 generadorExpr (Binary Mod exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [MOD]
 generadorExpr (Binary Minus exp1 exp2) = generadorExpr exp2 ++ generadorExpr exp1 ++ [SUB]
@@ -62,3 +63,9 @@ geneCode gen l = do
 
 aux :: String -> Code
 aux a = undefined
+
+jumpWhile :: Expr -> Body -> Code
+jumpWhile expr body = do
+                    let expC = generadorExpr expr
+                    let bodC = createJumpZ body
+                    expC ++ bodC ++ [JUMP (-((length expC) + (length bodC)))]
