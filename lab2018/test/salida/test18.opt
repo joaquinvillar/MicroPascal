@@ -1,0 +1,3 @@
+Program "ejemplo3" [VarDef "w" integer,VarDef "x" boolean] [Read "w",Assig "x" (Binary Less (Var "w") (IntLit 10)),If (Var "x") [Write (Var "w")] [Write (IntLit 10)]]
+8
+===============================

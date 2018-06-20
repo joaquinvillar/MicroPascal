@@ -1,1 +1,2 @@
 Program "test12" [VarDef "y" boolean] [Assig "y" (BoolLit False)]
+===============================

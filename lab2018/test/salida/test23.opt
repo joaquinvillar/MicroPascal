@@ -1,0 +1,3 @@
+Program "ejemplo8" [VarDef "x" integer] [Read "x",Assig "x" (IntLit 2),Assig "x" (Binary Mult (IntLit 5) (Var "x")),Assig "x" (Var "x"),Write (Binary Plus (Var "x") (IntLit 1))]
+11
+===============================

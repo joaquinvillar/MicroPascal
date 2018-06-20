@@ -1,0 +1,2 @@
+Program "ejemplo2" [VarDef "x" integer,VarDef "y" integer,VarDef "b" boolean] [Assig "x" (IntLit 10),Assig "y" (Binary Mult (Var "x") (IntLit 5)),Assig "b" (BoolLit True),Assig "b" (Unary Not (Binary Less (Var "x") (IntLit 10)))]
+===============================

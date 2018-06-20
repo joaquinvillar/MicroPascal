@@ -123,4 +123,68 @@ echo creando test15mio.cod
 MicroPascal.exe -m test/test15 < test/test15.in > test/misalida/test15mio.cod
 FC %~dp0test\salida\test15.cod %~dp0test\misalida\test15mio.cod
 
+echo creando test16mio.cod
+MicroPascal.exe -o test/test16 > test/misalida/test16mio.opt
+FC %~dp0test\salida\test16.opt %~dp0test\misalida\test16mio.opt
+
+echo creando test16mio.res
+MicroPascal.exe test/test16 > test/misalida/test16mio.res
+FC %~dp0test\salida\test16.res %~dp0test\misalida\test16mio.res
+
+echo creando test17mio.cod
+MicroPascal.exe -o test/test17 > test/misalida/test17mio.opt
+FC %~dp0test\salida\test17.opt %~dp0test\misalida\test17mio.opt
+
+echo creando test17mio.res
+MicroPascal.exe test/test17 > test/misalida/test17mio.res
+FC %~dp0test\salida\test17.res %~dp0test\misalida\test17mio.res
+
+echo creando test18mio.opt
+MicroPascal.exe -o test/test18 < test/test18.in > test/misalida/test18mio.opt
+FC %~dp0test\salida\test18.opt %~dp0test\misalida\test18mio.opt
+
+echo creando test18mio.res
+MicroPascal.exe test/test18 < test/test18.in > test/misalida/test18mio.res
+FC %~dp0test\salida\test18.res %~dp0test\misalida\test18mio.res
+
+echo creando test19mio.opt
+MicroPascal.exe -o test/test19 < test/test19.in > test/misalida/test19mio.opt
+FC %~dp0test\salida\test19.opt %~dp0test\misalida\test19mio.opt
+
+echo creando test19mio.res
+MicroPascal.exe test/test19 < test/test19.in > test/misalida/test19mio.res
+FC %~dp0test\salida\test19.res %~dp0test\misalida\test19mio.res
+
+echo creando test20mio.opt
+MicroPascal.exe -o test/test20 < test/test20.in > test/misalida/test20mio.opt
+FC %~dp0test\salida\test20.opt %~dp0test\misalida\test20mio.opt
+
+echo creando test20mio.res
+MicroPascal.exe test/test20 < test/test20.in > test/misalida/test20mio.res
+FC %~dp0test\salida\test20.res %~dp0test\misalida\test20mio.res
+
+echo creando test21mio.opt
+MicroPascal.exe -o test/test21 > test/misalida/test21mio.opt
+FC %~dp0test\salida\test21.opt %~dp0test\misalida\test21mio.opt
+
+echo creando test21mio.res
+MicroPascal.exe test/test21 > test/misalida/test21mio.res
+FC %~dp0test\salida\test21.res %~dp0test\misalida\test21mio.res
+
+echo creando test22mio.opt
+MicroPascal.exe -o test/test22 > test/misalida/test22mio.opt
+FC %~dp0test\salida\test22.opt %~dp0test\misalida\test22mio.opt
+
+echo creando test22mio.res
+MicroPascal.exe test/test22 > test/misalida/test22mio.res
+FC %~dp0test\salida\test22.res %~dp0test\misalida\test22mio.res
+
+echo creando test23mio.opt
+MicroPascal.exe -o test/test23 < test/test23.in > test/misalida/test23mio.opt
+FC %~dp0test\salida\test23.opt %~dp0test\misalida\test23mio.opt
+
+echo creando test23mio.res
+MicroPascal.exe test/test23 < test/test23.in > test/misalida/test23mio.res
+FC %~dp0test\salida\test23.res %~dp0test\misalida\test23mio.res
+
 pause

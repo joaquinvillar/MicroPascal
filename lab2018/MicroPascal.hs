@@ -26,6 +26,7 @@ main = do args <- getArgs
           case  getOpt RequireOrder options args of
            (opts,args',[])   -> do prg <- readFile (args' !! 0 ++ ".mp")
                                    either putStr (process opts) (compile prg)
+                                   putStrLn "==============================="
            (_,   _,    errs) -> ioError (userError (concat errs ++
                                                     usageInfo header options))
      where header = "Usage: MicroPascal [OPTIONS] file"  
