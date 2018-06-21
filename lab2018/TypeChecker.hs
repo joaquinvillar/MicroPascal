@@ -86,114 +86,97 @@ obtenerType [(VarDef nam ty)] _ = ty
 obtenerType ((VarDef nam ty):xs) nom = if nom == nam then ty else obtenerType xs nom
 
 
-funcionType :: Expr -> [Error]
-funcionType (BoolLit b) = [Expected TyInt TyBool] `debug` "funcionType b" 
-funcionType (Unary Not exp) = [Expected TyInt TyBool] `debug` "funcionType Not" 
-funcionType (Binary And exp1 exp2) = [Expected TyInt TyBool] `debug` "funcionType And" 
-funcionType (Binary Or exp1 exp2) = [Expected TyInt TyBool] `debug` "funcionType Or" 
-funcionType _ = [] `debug` "funcionType []" 
+funcionType :: Defs -> Expr -> Type -> [Error]
+funcionType def (Var b) tipo = if (tipo == TyInt) && (obtenerType def b) == TyBool then [Expected TyInt TyBool]  
+                           else if (tipo == TyBool) && (obtenerType def b) == TyInt then [Expected TyBool TyInt]   
+                           else []  
+
+funcionType def (BoolLit b) TyInt = [Expected TyInt TyBool] 
+funcionType def (IntLit b) TyBool = [Expected TyBool TyInt] 
+funcionType def (Unary Not exp) TyInt = [Expected TyInt TyBool] 
+funcionType def (Binary And exp1 exp2) TyInt = [Expected TyInt TyBool] 
+funcionType def (Binary Or exp1 exp2) TyInt = [Expected TyInt TyBool] 
+funcionType def (Binary Plus exp1 exp2) TyBool = [Expected TyBool TyInt]
+funcionType def (Binary Less exp1 exp2) TyInt = [Expected TyInt TyBool]
+funcionType def (Binary Div exp1 exp2) TyBool = [Expected  TyBool TyInt]
+funcionType def (Binary Mod exp1 exp2) TyBool = [Expected TyBool TyInt] 
+funcionType def (Binary Mult exp1 exp2) TyBool = [Expected TyBool TyInt]
+funcionType def (Binary Equ exp1 exp2) TyInt =  [Expected TyInt TyBool] 
+funcionType def (Binary Minus exp1 exp2) TyBool = [Expected TyBool TyInt] 
+funcionType def exp tipo = [] 
 
 -- Verifico Type
 verificarTypes :: Defs -> Body -> [Error]
 verificarTypes _ [] = [] 
-verificarTypes def ((Write exp):xs) = verificarExpresionType [exp] def TyInt ++ funcionType exp ++ verificarTypes def xs `debug` "Write" 
-verificarTypes def ((While exp body):xs) = verificarExpresionType [exp] def TyBool ++ verificarTypes def body ++ verificarTypes def xs `debug` "While" 
-verificarTypes def ((If exp body1 body2):xs) = verificarExpresionType [exp] def TyBool ++ verificarTypes def body1 ++ verificarTypes def body2 ++ verificarTypes def xs `debug` "If" 
-verificarTypes def ((Read nam):xs) = if (nam `elem` defListaNames def) then if obtenerType def nam == TyInt then verificarTypes def xs `debug` "Read If" 
-                                        else [Expected TyInt (obtenerType def nam)] ++ verificarTypes def xs `debug` "Read Else If [Expected TyInt (obtenerType def nam)]" 
-                                        else [Undefined nam] ++ verificarTypes def xs 
-verificarTypes def ((Assig nam exp):xs) = if not (nam `elem` defListaNames def) then [Undefined nam] ++ verificarTypes def xs `debug` "Assig Undef" 
-                                        else if obtenerType def nam == TyInt then verificarExpresionType [exp] def TyInt ++ verificarTypes def xs `debug` "Assig TyInt"  
-                                        else if obtenerType def nam == TyBool then verificarExpresionType [exp] def TyBool ++ verificarTypes def xs `debug` "Assig TyBool"  
-                                        else [Undefined nam] ++ verificarTypes def xs 
+verificarTypes def ((Write exp):xs) = verificarExpresionType exp def ++ funcionType def exp TyInt ++ verificarTypes def xs
+verificarTypes def ((While exp body):xs) = verificarExpresionType exp def ++ funcionType def exp TyBool ++ verificarTypes def body ++ verificarTypes def xs
+verificarTypes def ((If exp body1 body2):xs) = verificarExpresionType exp def ++ verificarTypes def body1 ++ verificarTypes def body2 ++ verificarTypes def xs
 
-verificarExpresionType :: [Expr] -> Defs -> Type -> [Error]
-verificarExpresionType [] def  tipo = []
-verificarExpresionType ((Var n):xs) def tipo = if (n `elem` defListaNames def) then if (obtenerType def n) == tipo then verificarExpresionType xs def tipo `debug` "Var IF"  else verificarExpresionType xs def tipo  `debug` "Var Else [Expected tipo (obtenerType def n)]" ++ [Expected tipo (obtenerType def n)] 
-                                                else [Undefined n]
-verificarExpresionType ((BoolLit b):xs) def tipo = if tipo == TyBool then verificarExpresionType xs def tipo else  verificarExpresionType xs def tipo `debug` "BoolLit Else [Expected tipo TyBool]" ++ [Expected tipo TyBool] 
-verificarExpresionType ((IntLit int):xs) def tipo = if tipo == TyInt then  verificarExpresionType xs def tipo `debug` "IntLit IF" else verificarExpresionType xs def tipo `debug` "IntLit Else [Expected tipo TyInt]" ++ [Expected tipo TyInt] 
-verificarExpresionType ((Unary Not exp):xs) def tipo = if tipo == TyBool then verificarExpresionType [exp] def TyBool ++ verificarExpresionType xs def tipo else verificarExpresionType xs def tipo ++ [Expected tipo TyBool]
-verificarExpresionType ((Unary Neg exp):xs) def tipo = if tipo == TyInt then verificarExpresionType [exp] def TyInt ++ verificarExpresionType xs def tipo else verificarExpresionType xs def tipo ++ [Expected tipo TyInt]
-verificarExpresionType ((Binary op exp1 exp2):xs) def tipo =     
+verificarTypes def ((Read nam):xs) = if obtenerType def nam == TyInt then verificarTypes def xs
+                                     else [Expected TyInt (obtenerType def nam)] ++ verificarTypes def xs 
+                                     
+
+verificarTypes def ((Assig nam exp):xs) = if obtenerType def nam == TyInt then verificarExpresionType exp def ++ funcionType def exp TyInt ++ verificarTypes def xs
+                                          else verificarExpresionType exp def ++ funcionType def exp TyBool ++ verificarTypes def xs
+                                        
+verificarExpresionType :: Expr -> Defs -> [Error]
+verificarExpresionType (Var n) def = []
+verificarExpresionType (IntLit int) def = [] 
+verificarExpresionType (BoolLit b) def = [] 
+verificarExpresionType (Unary Not exp) def =  verificarExpresionType exp def 
+verificarExpresionType (Unary Neg exp) def =  verificarExpresionType exp def  
+verificarExpresionType (Binary op exp1 exp2) def =     
     let undef = verificarUndefinedExp (defListaNames def) (expListaNames [exp1]) in 
         let undef1 = verificarUndefinedExp (defListaNames def) (expListaNames [exp2]) in 
-            let expType = verificarExpresionType [exp1] def (expresionType [exp1] def) in 
-                let expType1 = verificarExpresionType [exp2] def (expresionType [exp2] def) in 
     case op of
      Equ -> if null undef then 
                     if null undef1 then
-                        if (length expType) > 0 then expType ++ expType1 ++ verificarExpresionType xs def tipo 
-                        else if (length expType1) > 0 then expType1 ++ verificarExpresionType xs def tipo
-                                else if tipo == TyBool then verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo
-                                    else verificarExpresionType [exp1,exp2] def TyInt ++ verificarExpresionType xs def tipo ++ [Expected tipo TyBool]
-                    else undef1 ++ expType ++ verificarExpresionType xs def tipo
-                else if null undef1 then  undef ++ expType1 ++ verificarExpresionType xs def tipo
-                     else undef ++ undef1 ++ verificarExpresionType xs def tipo
+                        verificarExpresionType exp1 def ++ verificarExpresionType exp2 def ++ funcionType def exp1 TyInt ++ funcionType def exp2 TyInt
+                    else undef1
+                else if null undef1 then  undef
+                     else undef ++ undef1
      And -> if null (verificarUndefinedExp (defListaNames def) (expListaNames [exp1,exp2])) then
-                if tipo == TyBool then verificarExpresionType [exp1] def TyBool ++ verificarExpresionType [exp2] def TyBool ++ verificarExpresionType xs def tipo `debug` "And If" 
-                else verificarExpresionType [exp1] def TyBool ++ verificarExpresionType [exp2] def TyBool ++ verificarExpresionType xs  def tipo `debug` "And else [Expected tipo TyBool]"  ++ [Expected tipo TyBool]
-            else verificarUndefinedExp (defListaNames def) (expListaNames [exp1,exp2]) ++ verificarExpresionType xs def tipo `debug` "And verificarUndefinedExp" 
+                verificarExpresionType exp1 def ++ verificarExpresionType exp2 def ++ funcionType def exp1 TyBool ++ funcionType def exp2 TyBool
+            else verificarUndefinedExp (defListaNames def) (expListaNames [exp1,exp2]) 
      Or -> if null undef then 
                     if null undef1 then
-                        if (length expType) > 0 then expType ++ expType1 ++ verificarExpresionType xs def tipo `debug` "Or length expType" 
-                        else if (length expType1) > 0 then expType1 ++ verificarExpresionType xs def tipo `debug` "Or length expType1" 
-                            else if tipo == TyBool then verificarExpresionType [exp1] def TyBool ++ verificarExpresionType [exp2] def TyBool ++ verificarExpresionType xs def tipo `debug` "Or If" 
-                                else verificarExpresionType [exp1,exp2] def TyBool ++ verificarExpresionType xs def tipo `debug` "Or Else [Expected tipo TyBool]" ++ [Expected tipo TyBool]
-                    else undef1 ++ expType ++ verificarExpresionType xs def tipo `debug` "Or else undef1" 
-                else if null undef1 then  undef ++ expType1 ++ verificarExpresionType xs def tipo `debug` "Or undef1 elseIF" 
-                     else undef ++ undef1 ++ verificarExpresionType xs def tipo `debug` "Or undef" 
+                        verificarExpresionType exp1 def ++ verificarExpresionType exp2 def ++ funcionType def exp1 TyBool ++ funcionType def exp2 TyBool
+                    else undef1 
+                else if null undef1 then  undef
+                     else undef ++ undef1 
      Plus -> if null undef then 
                     if null undef1 then
-                        if (length expType) > 0 then expType ++ expType1 ++ verificarExpresionType xs def tipo `debug` "Plus length expType" 
-                        else if (length expType1) > 0 then expType1 ++ verificarExpresionType xs def tipo `debug` "Plus length expType1" 
-                            else if tipo == TyInt then verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo `debug` "Plus If" 
-                                else verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo `debug` "Plus Else [Expected tipo TyInt]" ++ [Expected tipo TyInt]   
-                    else undef1 ++ expType ++ verificarExpresionType xs def tipo `debug` "Plus else undef1" 
-                else if null undef1 then  undef ++ expType1 ++ verificarExpresionType xs def tipo `debug` "Plus undef1 elseIF" 
-                     else undef ++ undef1 ++ verificarExpresionType xs def tipo `debug` "Plus undef" 
+                        verificarExpresionType exp1 def ++ verificarExpresionType exp2 def ++ funcionType def exp1 TyInt ++ funcionType def exp2 TyInt
+                    else undef1
+                else if null undef1 then  undef
+                     else undef ++ undef1
      Minus -> if null undef then 
                     if null undef1 then
-                        if (length expType) > 0 then expType ++ expType1 ++ verificarExpresionType xs def tipo 
-                        else if (length expType1) > 0 then expType1 ++ verificarExpresionType xs def tipo
-                            else if tipo == TyInt then verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo
-                                else verificarExpresionType [exp1,exp2] def TyInt ++ verificarExpresionType xs def tipo ++ [Expected tipo TyInt] 
-                    else undef1 ++ expType ++ verificarExpresionType xs def tipo
-                else if null undef1 then undef ++expType1 ++ verificarExpresionType xs def tipo
-                     else undef ++ undef1 ++ verificarExpresionType xs def tipo
+                        verificarExpresionType exp1 def ++ verificarExpresionType exp2 def ++ funcionType def exp1 TyInt ++ funcionType def exp2 TyInt
+                    else undef1
+                else if null undef1 then undef
+                     else undef ++ undef1
      Mult -> if null undef then 
                     if null undef1 then
-                        if (length expType) > 0 then expType ++ expType1 ++ verificarExpresionType xs def tipo
-                        else if (length expType1) > 0 then expType1 ++ verificarExpresionType xs def tipo ++[Expected tipo TyInt] 
-                            else if tipo == TyInt then verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo
-                                else verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo ++ [Expected tipo TyInt]
-                    else undef1 ++ expType ++ verificarExpresionType xs def tipo
-            else if null undef1 then undef ++ expType1 ++ verificarExpresionType xs def tipo
-                     else undef ++ undef1 ++ verificarExpresionType xs def tipo
+                        verificarExpresionType exp1 def ++ verificarExpresionType exp2 def ++ funcionType def exp1 TyInt ++ funcionType def exp2 TyInt
+                    else undef1
+            else if null undef1 then undef
+                     else undef ++ undef1
      Div -> if null undef then 
                     if null undef1 then
-                        if (length expType) > 0 then expType ++ expType1 ++ verificarExpresionType xs def tipo
-                        else if (length expType1) > 0 then expType1 ++ verificarExpresionType xs def tipo
-                            else if tipo == TyInt then verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo
-                                else verificarExpresionType [exp1,exp2] def TyInt ++ verificarExpresionType xs def tipo ++ [Expected tipo TyInt]
-                    else undef1 ++ expType ++ verificarExpresionType xs def tipo
-                else if null undef1 then undef ++ expType1 ++ verificarExpresionType xs def tipo
-                     else undef ++ undef1 ++ verificarExpresionType xs def tipo 
+                        verificarExpresionType exp1 def ++ verificarExpresionType exp2 def  ++ funcionType def exp1 TyInt ++ funcionType def exp2 TyInt
+                    else undef1
+                else if null undef1 then undef
+                     else undef ++ undef1
      Less -> if null undef then 
                     if null undef1 then
-                        if (length expType) > 0 then expType ++ expType1 ++ verificarExpresionType xs def tipo
-                        else if (length expType1) > 0 then expType1 ++ verificarExpresionType xs def tipo
-                            else if tipo == TyBool then verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo
-                                else verificarExpresionType [exp1,exp2] def TyInt ++ verificarExpresionType xs def tipo ++ [Expected tipo TyBool] 
-                    else undef1 ++ expType ++ verificarExpresionType xs def tipo
-                else if null undef1 then  undef ++ expType1 ++ verificarExpresionType xs def tipo
-                     else undef ++ undef1 ++ verificarExpresionType xs def tipo
+                       verificarExpresionType exp1 def ++ verificarExpresionType exp2 def  ++ funcionType def exp1 TyInt ++ funcionType def exp2 TyInt
+                    else undef1
+                else if null undef1 then  undef
+                     else undef ++ undef1 
      Mod -> if null undef then 
                     if null undef1 then
-                        if (length expType) > 0 then expType ++ expType1 ++ verificarExpresionType xs def tipo
-                        else if  (length expType1) > 0 then expType1 ++ verificarExpresionType xs def tipo
-                            else if tipo == TyInt then verificarExpresionType [exp1] def TyInt ++ verificarExpresionType [exp2] def TyInt ++ verificarExpresionType xs def tipo
-                                else verificarExpresionType [exp1,exp2] def TyInt ++ verificarExpresionType xs def tipo  ++ [Expected tipo TyInt] 
-                    else undef1 ++ expType ++ verificarExpresionType xs def tipo
-                else if null undef1 then undef ++ expType1 ++ verificarExpresionType xs def tipo
-                     else undef ++ undef1 ++ verificarExpresionType xs def tipo
+                        verificarExpresionType exp1 def ++ verificarExpresionType exp2 def ++ funcionType def exp1 TyInt ++ funcionType def exp2 TyInt
+                    else undef1
+                else if null undef1 then undef
+                     else undef ++ undef1 
