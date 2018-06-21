@@ -156,11 +156,11 @@ MicroPascal.exe test/test19 < test/test19.in > test/misalida/test19mio.res
 FC %~dp0test\salida\test19.res %~dp0test\misalida\test19mio.res
 
 echo creando test20mio.opt
-MicroPascal.exe -o test/test20 < test/test20.in > test/misalida/test20mio.opt
+MicroPascal.exe -o test/test20 > test/misalida/test20mio.opt
 FC %~dp0test\salida\test20.opt %~dp0test\misalida\test20mio.opt
 
 echo creando test20mio.res
-MicroPascal.exe test/test20 < test/test20.in > test/misalida/test20mio.res
+MicroPascal.exe test/test20 > test/misalida/test20mio.res
 FC %~dp0test\salida\test20.res %~dp0test\misalida\test20mio.res
 
 echo creando test21mio.opt
